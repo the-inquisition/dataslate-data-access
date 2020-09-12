@@ -1,16 +1,42 @@
-# This is a sample Python script.
+import logging as log
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+from pymongo import MongoClient
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+class MongoAPI:
+    def __init__(self, data):
+        self.client = MongoClient("mongodb://dataslate-data-access:test@huxx-dev-shard-00-00.5n2pg.gcp.mongodb.net"
+                                  ":27017,huxx-dev-shard-00-01.5n2pg.gcp.mongodb.net:27017,"
+                                  "huxx-dev-shard-00-02.5n2pg.gcp.mongodb.net:27017/dataslate?ssl=true&replicaSet"
+                                  "=atlas-n977x7-shard-0&authSource=admin&retryWrites=true&w=majority")
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+        database = data['database']
+        collection = data['collection']
+        cursor = self.client[database]
+        self.collection = cursor[collection]
+        self.data = data
+
+    def read(self):
+        documents = self.collection.find()
+        output = [{item: data[item] for item in data if item != '_id'} for data in documents]
+        return output
+
+    def write(self, data):
+        log.info('Writing Data')
+        new_document = data['Document']
+        response = self.collection.insert_one(new_document)
+        output = {'Status': 'Successfully Inserted', 'Document_ID': str(response.inserted_id)}
+        return output
+
+    def update(self):
+        filt = self.data['Filter']
+        updated_data = {"$set": self.data['DataToBeUpdated']}
+        response = self.collection.update_one(filt, updated_data)
+        output = {'Status': 'Successfully Updated' if response.modified_count > 0 else "Nothing was updated."}
+        return output
+
+    def delete(self, data):
+        filt = data['Filter']
+        response = self.collection.delete_one(filt)
+        output = {'Status': 'Successfully Deleted' if response.deleted_count > 0 else "Document not found."}
+        return output
