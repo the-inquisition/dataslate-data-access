@@ -15,7 +15,7 @@ class MongoAPI:
         cursor = self.client[database]
         self.collection = cursor[collection]
         self.data = data
-        self.filter = data['Filter']
+        self.filter = data['filter']
 
     def read(self):
         documents = self.collection.find(self.filter)
@@ -24,13 +24,13 @@ class MongoAPI:
 
     def write(self, data):
         log.info('Writing Data')
-        new_document = data['Document']
+        new_document = data['document']
         response = self.collection.insert_one(new_document)
         output = {'Status': 'Successfully Inserted', 'Document_ID': str(response.inserted_id)}
         return output
 
     def update(self):
-        updated_data = {"$set": self.data['DataToBeUpdated']}
+        updated_data = {"$set": self.data['updates']}
         response = self.collection.update_one(self.filter, updated_data)
         output = {'Status': 'Successfully Updated' if response.modified_count > 0 else "Nothing was updated."}
         return output

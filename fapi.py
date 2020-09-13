@@ -16,7 +16,7 @@ def base():
 #   "database": "dataslate",
 #   "collection": "data_entries"
 # }
-@app.route('/mongodb', methods=['GET'])
+@app.route('/mongodbf', methods=['POST'])
 def mongo_read():
     data = request.json
     if data is None or data == {}:
@@ -42,7 +42,7 @@ def mongo_read():
 @app.route('/mongodb', methods=['POST'])
 def mongo_write():
     data = request.json
-    if data is None or data == {} or 'Document' not in data:
+    if data is None or data == {} or 'document' not in data:
         return Response(response=json.dumps({"Error": "Please provide connection information"}),
                         status=400,
                         mimetype='application/json')
@@ -68,7 +68,7 @@ def mongo_write():
 @app.route('/mongodb', methods=['PUT'])
 def mongo_update():
     data = request.json
-    if data is None or data == {} or 'DataToBeUpdated' not in data:
+    if data is None or data == {} or 'updates' not in data:
         return Response(response=json.dumps({"Error": "Please provide connection information"}),
                         status=400,
                         mimetype='application/json')
@@ -90,7 +90,7 @@ def mongo_update():
 @app.route('/mongodb', methods=['DELETE'])
 def mongo_delete():
     data = request.json
-    if data is None or data == {} or 'Filter' not in data:
+    if data is None or data == {} or 'filter' not in data:
         return Response(response=json.dumps({"Delete_Error": "Filter not valid or no information found"}))
     obj1 = MongoAPI(data)
     response = obj1.delete(data)
