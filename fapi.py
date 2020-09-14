@@ -1,7 +1,9 @@
 from flask import Flask, Response, json, request
-from main import MongoAPI
+from main import DataslateDBContext
+from campaign import campaign
 
 app = Flask(__name__)
+app.register_blueprint(campaign)
 
 
 @app.route('/')
@@ -23,7 +25,7 @@ def mongo_read():
         return Response(response=json.dumps({"Error": "Please provide connection information"}),
                         status=400,
                         mimetype='application/json')
-    obj1 = MongoAPI(data)
+    obj1 = DataslateDBContext(data)
     response = obj1.read()
     return Response(response=json.dumps(response),
                     status=200,
@@ -46,7 +48,7 @@ def mongo_write():
         return Response(response=json.dumps({"Error": "Please provide connection information"}),
                         status=400,
                         mimetype='application/json')
-    obj1 = MongoAPI(data)
+    obj1 = DataslateDBContext(data)
     response = obj1.write(data)
     return Response(response=json.dumps(response),
                     status=200,
@@ -72,7 +74,7 @@ def mongo_update():
         return Response(response=json.dumps({"Error": "Please provide connection information"}),
                         status=400,
                         mimetype='application/json')
-    obj1 = MongoAPI(data)
+    obj1 = DataslateDBContext(data)
     response = obj1.update()
     return Response(response=json.dumps(response),
                     status=200,
@@ -92,8 +94,8 @@ def mongo_delete():
     data = request.json
     if data is None or data == {} or 'filter' not in data:
         return Response(response=json.dumps({"Delete_Error": "Filter not valid or no information found"}))
-    obj1 = MongoAPI(data)
-    response = obj1.delete(data)
+    obj1 = DataslateDBContext(data)
+    response = obj1.delete()
     return Response(response=json.dumps(response),
                     status=200,
                     mimetype='application/json')
