@@ -19,9 +19,13 @@ class DataslateDBContext:
         # self.filter = data['filter']
 
     def read(self, filters):
+        print(filters['owner'])
         documents = self.collection.find(filters)
-        output = [{item: data[item] for item in data} for data in documents]
-        print(output)
+        print(documents)
+        output = [{item: data[item] for item in data if item != '_id'} for data in documents]
+        # if not output:
+        #     output = [{item: data[item] for item in data if item == 'name'}
+        #               for data in self.collection.find({"owner": filters['owner']})]
         return output
 
     def write(self, document):
