@@ -19,13 +19,9 @@ class DataslateDBContext:
         # self.filter = data['filter']
 
     def read(self, filters):
-        print(filters['owner'])
         documents = self.collection.find(filters)
-        print(documents)
+        print(filters)
         output = [{item: data[item] for item in data if item != '_id'} for data in documents]
-        # if not output:
-        #     output = [{item: data[item] for item in data if item == 'name'}
-        #               for data in self.collection.find({"owner": filters['owner']})]
         return output
 
     def write(self, document):
@@ -42,4 +38,14 @@ class DataslateDBContext:
     def delete(self, filters):
         response = self.collection.delete_one(filters)
         output = {'Status': 'Successfully Deleted' if response.deleted_count > 0 else "Document not found."}
+        return output
+
+    def add_to_array(self, array, updates, filters):
+        tobeupdated = {"$pushAll: {"+array+": ["+updates+"]"}
+        print(tobeupdated)
+        print(filters)
+        #response = self.collection.update(filters, {'$pushAll': {'+array+':['+updates+']'}})
+        output = {'Status': 'Successfully Updated ' +
+                            response.modified_count + " entries" if
+                            response.modified_count > 0 else "Nothing was updated."}
         return output
