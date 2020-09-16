@@ -20,7 +20,6 @@ class DataslateDBContext:
 
     def read(self, filters):
         documents = self.collection.find(filters)
-        print(filters)
         output = [{item: data[item] for item in data if item != '_id'} for data in documents]
         return output
 
@@ -40,12 +39,22 @@ class DataslateDBContext:
         output = {'Status': 'Successfully Deleted' if response.deleted_count > 0 else "Document not found."}
         return output
 
-    def add_to_array(self, array, updates, filters):
-        tobeupdated = {"$pushAll: {"+array+": ["+updates+"]"}
-        print(tobeupdated)
-        print(filters)
-        #response = self.collection.update(filters, {'$pushAll': {'+array+':['+updates+']'}})
-        output = {'Status': 'Successfully Updated ' +
-                            response.modified_count + " entries" if
-                            response.modified_count > 0 else "Nothing was updated."}
+    def add_to_array_unique(self, array, updates, filters):
+        original_array = self.collection.find(filters)[0][array]
+        updates_clone = updates
+
+        for x in original_array:
+            i = 0
+            for d in updates:
+                if d['username'] == x['username']:
+                    updates_clone.pop(i)
+                i = i + 1
+        if any(updates_clone):
+            response = self.collection.update_one(filters, {'$push': {array: {'$each': updates_clone}}})
+            output = {'Status': 'Successfully Updated' if response.modified_count > 0 else "Nothing was updated."}
+            return output
+
+    def remove_from_array(self, array, array_field, removes: [], filters):
+        response = self.collection.update_many(filters, {'$pull': {array: {array_field: {'$in': removes}}}})
+        output = {'Status': 'Successfully Removed' if response.modified_count > 0 else "Nothing was removed."}
         return output
