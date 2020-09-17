@@ -6,6 +6,7 @@ campaign = Blueprint('campaign', __name__)
 context = DataslateDBContext("campaign")
 
 
+# Campaign
 @campaign.route('/<string:owner>/<string:name>', methods=['GET'])
 def get_campaign(name, owner):
     filters = dict({
@@ -32,6 +33,7 @@ def get_available_campaigns(owner):
     return {'available': output, 'status': 204}
 
 
+# Players
 @campaign.route('/<string:owner>/<string:name>/players', methods=['GET'])
 def get_campaign_players(name, owner):
     filters = dict({
@@ -52,6 +54,15 @@ def get_campaign_players(name, owner):
 
 @campaign.route('/<string:owner>/<string:name>/players', methods=['POST'])
 def add_campaign_players(name, owner):
+    """
+    USAGE/DATA/REQUEST FORM
+
+    [{"username":"testerson","displayname":"test"},{"username":"heap","displayname":"jhon"}]
+
+    :param name: name of campaign
+    :param owner: name of campaign owner
+    :return: insertion affirmation
+    """
     filters = dict({
         "owner": owner,
         "name": name
@@ -77,6 +88,17 @@ def update_campaign_players(name, owner):
 
 @campaign.route('/<string:owner>/<string:name>/players', methods=['DELETE'])
 def remove_campaign_players(name, owner):
+    """
+    Remove players from a campaign by username
+
+    USAGE (USERNAME ARRAY IN REQUEST BODY):
+
+    ["testerson","heapson"]
+
+    :param name: name of campaign
+    :param owner: name of campaign owner
+    :return: removal affirmation
+    """
     filters = dict({
         "owner": owner,
         "name": name

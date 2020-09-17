@@ -39,22 +39,20 @@ class DataslateDBContext:
         output = {'Status': 'Successfully Deleted' if response.deleted_count > 0 else "Document not found."}
         return output
 
-    def add_to_array_unique(self, array, updates, filters):
-        original_array = self.collection.find(filters)[0][array]
-        updates_clone = updates
+    def add_to_array_unique(self, array_name, inserts, filters):
+        response = self.collection.update_one(filters, {'$addToSet': {array_name: {'$each': inserts}}})
+        output = {'Status': 'Successfully Updated' if response.modified_count > 0 else "Nothing was updated."}
+        return output
 
-        for x in original_array:
-            i = 0
-            for d in updates:
-                if d['username'] == x['username']:
-                    updates_clone.pop(i)
-                i = i + 1
-        if any(updates_clone):
-            response = self.collection.update_one(filters, {'$push': {array: {'$each': updates_clone}}})
-            output = {'Status': 'Successfully Updated' if response.modified_count > 0 else "Nothing was updated."}
-            return output
+    def update_array_matching_elements(self, array_name, update, filters):
+        mod_count = 0
+        # for k,v in update:
+        # response = self.collection.update_one(filters, {'$set': {array_name +'.$[i].' + update['field']: array_match['filter']}}, {arrayFilters: [{“i.b”: 0}]})
+        #     mod_count = mod_count + response.modified_count
+        # output = {'Status': 'Successfully Removed' if mod_count > 0 else "Nothing was removed."}
+        # return output
 
-    def remove_from_array(self, array, array_field, removes: [], filters):
-        response = self.collection.update_many(filters, {'$pull': {array: {array_field: {'$in': removes}}}})
+    def remove_from_array(self, array_name, array_field, removes: [], filters):
+        response = self.collection.update_one(filters, {'$pull': {array_name: {array_field: {'$in': removes}}}})
         output = {'Status': 'Successfully Removed' if response.modified_count > 0 else "Nothing was removed."}
         return output
