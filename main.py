@@ -1,7 +1,10 @@
 import logging as log
-
+import ast
 from flask import json
 from pymongo import MongoClient
+from bson import Binary
+from bson.json_util import dumps
+from bson.objectid import ObjectId
 
 
 class DataslateDBContext:
@@ -25,7 +28,17 @@ class DataslateDBContext:
 
     def read(self, filters):
         documents = self.collection.find(filters)
-        output = [{item: data[item] for item in data if item != '_id'} for data in documents]
+        output = []
+        for data in documents:
+            data_dict = {}
+            for item in data:
+                if item == '_id':
+                    raw_id_dict = ast.literal_eval(dumps(data[item]))
+                    for v in raw_id_dict:
+                        data_dict[v] = raw_id_dict[v]
+                else:
+                    data_dict[item] = data[item]
+            output.append(data_dict)
         return output
 
     def update(self, updates, filters):

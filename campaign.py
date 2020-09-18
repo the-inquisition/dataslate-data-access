@@ -1,9 +1,11 @@
+from bson import ObjectId
 from flask import Flask, Response, json, request, Blueprint
 from main import DataslateDBContext
+import user
 
 campaign = Blueprint('campaign', __name__)
 
-context = DataslateDBContext("campaign")
+campaign_collection = DataslateDBContext("campaign")
 
 
 # Campaign
@@ -13,10 +15,10 @@ def get_campaign(name, owner):
         "owner": owner,
         "name": name
     })
-    response = context.read(filters)
+    response = campaign_collection.read(filters)
     response_status = 200
     if not response:
-        response = get_available_campaigns(owner)
+        response = get_owners_campaigns(owner)
         response_status = response['status']
         del response['status']
     return Response(response=json.dumps(response),
@@ -24,8 +26,8 @@ def get_campaign(name, owner):
                     mimetype='application/json')
 
 
-def get_available_campaigns(owner):
-    response = context.read({"owner": owner})
+def get_owners_campaigns(owner):
+    response = campaign_collection.read({"owner": owner})
     output = []
     for c in response:
         output.append({'name': c['name']})
@@ -35,11 +37,24 @@ def get_available_campaigns(owner):
 
 @campaign.route('/<string:owner>/<string:name>', methods=['POST'])
 def add_campaign(name, owner):
-    addition = {
+    new_campaign = {
         "owner": owner,
         "name": name
     }
-    response = context.create(addition)
+    response = campaign_collection.create(new_campaign)
+    return Response(response=json.dumps(response),
+                    status=201,
+                    mimetype='application/json')
+
+
+@campaign.route('/<string:username>/campaigns', methods=['GET'])
+def get_available_campaigns(username):
+    filters = {'$or': [{'owner': username}, {'players.username': username}]}
+    response = campaign_collection.read(filters)
+    if not response:
+        return Response(response=json.dumps({'No available campaigns'}),
+                        status=204,
+                        mimetype='application/json')
     return Response(response=json.dumps(response),
                     status=200,
                     mimetype='application/json')
@@ -52,10 +67,10 @@ def get_campaign_players(name, owner):
         "owner": owner,
         "name": name
     })
-    response = context.read(filters)
+    response = campaign_collection.read(filters)
     response_status = 200
     if not response:
-        response = get_available_campaigns(owner)
+        response = get_owners_campaigns(owner)
         response_status = response['status']
         del response['status']
     # response is a list, get first (and only, because of owner/name constraint)
@@ -79,8 +94,22 @@ def add_campaign_players(name, owner):
         "owner": owner,
         "name": name
     })
-    players_data = request.json
-    response = context.add_to_array_unique('players', players_data, filters)
+
+    players = request.json
+    players_filter = []
+    for p in players:
+        players_filter.append(p['username'])
+    players_data = user.user_collection.read({'username': {'$in': players_filter}})
+    for pd in players_data:
+        for p in players:
+            if p['username'] == pd['username']:
+                pd['displayname'] = p['displayname']
+                oid = pd['$oid']
+                pd['_id'] = ObjectId(oid)
+                del pd['$oid']
+                del pd['password']
+                del pd['email']
+    response = campaign_collection.add_to_array_unique('players', players_data, filters)
     if not response:
         return Response(response=json.dumps({"message": "players already added"}),
                         status=200,
@@ -116,7 +145,7 @@ def remove_campaign_players(name, owner):
         "name": name
     })
     players_data = request.json
-    response = context.remove_from_array('players', 'username', players_data, filters)
+    response = campaign_collection.remove_from_array('players', 'username', players_data, filters)
     return Response(response=json.dumps(response),
                     status=200,
                     mimetype='application/json')

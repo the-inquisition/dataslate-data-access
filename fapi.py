@@ -2,9 +2,11 @@ from flask import Flask, Response, json, request
 from flask_cors import CORS, cross_origin
 from main import DataslateDBContext
 from campaign import campaign
+from user import user
 
 app = Flask(__name__)
 app.register_blueprint(campaign)
+app.register_blueprint(user)
 # app.config['CORS-HEADERS'] = 'Content-Type'
 
 CORS(app)
