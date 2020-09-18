@@ -5,13 +5,13 @@ from campaign import campaign
 
 app = Flask(__name__)
 app.register_blueprint(campaign)
-app.config['CORS-HEADERS'] = 'Content-Type'
+# app.config['CORS-HEADERS'] = 'Content-Type'
 
-cors = CORS(app, resources={r"/": {"origins": "http://localhost:3000"}})
+CORS(app)
 
 
-@app.route('/')
-@cross_origin(origin='localhost', headers=['Content-Type', 'Authorization'])
+@app.route('/api')
+# @cross_origin(origin='localhost', headers=['Content-Type', 'Authorization'])
 def base():
     return Response(response=json.dumps({"Status": "UP"}),
                     status=200,
