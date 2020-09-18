@@ -18,14 +18,14 @@ class DataslateDBContext:
         # self.data = data
         # self.filter = data['filter']
 
+    def create(self, document):
+        response = self.collection.insert_one(document)
+        output = {'Status': 'Successfully Inserted', 'Document_ID': str(response.inserted_id)}
+        return output
+
     def read(self, filters):
         documents = self.collection.find(filters)
         output = [{item: data[item] for item in data if item != '_id'} for data in documents]
-        return output
-
-    def write(self, document):
-        response = self.collection.insert_one(document)
-        output = {'Status': 'Successfully Inserted', 'Document_ID': str(response.inserted_id)}
         return output
 
     def update(self, updates, filters):

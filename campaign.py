@@ -33,6 +33,18 @@ def get_available_campaigns(owner):
     return {'available': output, 'status': 204}
 
 
+@campaign.route('/<string:owner>/<string:name>', methods=['POST'])
+def add_campaign(name, owner):
+    addition = {
+        "owner": owner,
+        "name": name
+    }
+    response = context.create(addition)
+    return Response(response=json.dumps(response),
+                    status=200,
+                    mimetype='application/json')
+
+
 # Players
 @campaign.route('/<string:owner>/<string:name>/players', methods=['GET'])
 def get_campaign_players(name, owner):

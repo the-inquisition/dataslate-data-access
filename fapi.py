@@ -1,12 +1,17 @@
 from flask import Flask, Response, json, request
+from flask_cors import CORS, cross_origin
 from main import DataslateDBContext
 from campaign import campaign
 
 app = Flask(__name__)
 app.register_blueprint(campaign)
+app.config['CORS-HEADERS'] = 'Content-Type'
+
+cors = CORS(app, resources={r"/": {"origins": "http://localhost:3000"}})
 
 
 @app.route('/')
+@cross_origin(origin='localhost', headers=['Content-Type', 'Authorization'])
 def base():
     return Response(response=json.dumps({"Status": "UP"}),
                     status=200,
