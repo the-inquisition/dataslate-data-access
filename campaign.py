@@ -104,7 +104,7 @@ def add_campaign_players(name, owner):
         for p in players:
             if p['username'] == pd['username']:
                 pd['displayname'] = p['displayname']
-                oid = pd['$oid']
+                oid = pd['_id']
                 pd['_id'] = ObjectId(oid)
                 del pd['$oid']
                 del pd['password']

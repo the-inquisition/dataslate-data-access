@@ -14,12 +14,10 @@ class DataslateDBContext:
                                   "huxx-dev-shard-00-02.5n2pg.gcp.mongodb.net:27017/dataslate?ssl=true&replicaSet"
                                   "=atlas-n977x7-shard-0&authSource=admin&retryWrites=true&w=majority")
 
-        database = "dataslate"  # data['database']
+        database = "dataslate"
         collection = collection_name
         cursor = self.client[database]
         self.collection = cursor[collection]
-        # self.data = data
-        # self.filter = data['filter']
 
     def create(self, document):
         response = self.collection.insert_one(document)
@@ -35,7 +33,7 @@ class DataslateDBContext:
                 if item == '_id':
                     raw_id_dict = ast.literal_eval(dumps(data[item]))
                     for v in raw_id_dict:
-                        data_dict[v] = raw_id_dict[v]
+                        data_dict['_id'] = raw_id_dict[v]
                 else:
                     data_dict[item] = data[item]
             output.append(data_dict)
